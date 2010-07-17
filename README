@@ -1,0 +1,22 @@
+Wallflower 0.1 README
+
+There's not much to this at the moment; as it's
+just a jQuery plugin, there's no "installation"
+as such; just use it by gluing it into your
+own build or directly importing it into a page.
+
+Files:
+
+* wallflower-0.1.js - the plugin
+
+Other files:
+
+* index.html - rudimentary page with links to
+    the source and a demo/test page
+* jqui - jQuery UI stuff for the test - ignore
+    this for your own project
+* wallflower-fragment.html - part of demo/test
+* wallflower.html - part of demo/test
+
+More info:
+
