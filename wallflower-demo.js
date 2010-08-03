@@ -13,9 +13,7 @@
 // Demo part 1: establish wallflower features for this page
 //
 // This section of code will establish the handlers for all the
-// unobtrusive features used on this page. Of course, if we were
-// really being unobtrusive this would be a separate file, but
-// it's here for convenience.
+// unobtrusive features used on this page. 
 //
 $.wallflower({
   "datepicker": {selector: 'input:text.datepicker'},

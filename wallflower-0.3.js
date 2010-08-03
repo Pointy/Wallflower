@@ -67,9 +67,7 @@
       features.
 
   *********************************************************/
-  var registry = [];
-  registry.ordered = true;
-  registry.byName = {};
+  var registry = $.extend([], { ordered: true, byName: {} });
 
   function wfRegister(name, defaultParams, handler) {
     var configObject = {};
@@ -78,7 +76,7 @@
         configObject[name] = { 'defaults': defaultParams || {} };
       }
       catch (x) {
-        console.log(x);
+        // console.log(x);
       }
     }
     else if (!handler && $.isFunction(defaultParams)) {
@@ -147,8 +145,7 @@
 
     registry.length = 0;
     for (var featureName in registry.byName) {
-      var feature = registry.byName[featureName];
-      feature.rank = 0;
+      registry.byName[featureName].rank = 0;
     }
 
     for (var featureName in registry.byName) {
@@ -212,19 +209,20 @@
         // be in the class as "{...}" or in the feature's attribute,
         // or in a non-script script block
         //
-        var wpb = $elem.metadata({single: 'metadata-class', type: 'class'});
+        var wpb = $.extend({}, $elem.metadata({single: 'wallflower_class', type: 'class'}));
         if (wpb['wf']) wpb = wpb['wf']; // in case class metadata used for other stuff
         if (wpb[feature.name]) wpb = wpb[feature.name];
 
         if (feature.evalAttr) {
-          var attrobj = $elem.metadata({single: 'metadata-attr', type: 'attr', name: feature.attribute});
+          var attrobj = $elem.metadata({single: 'wallflower_attr', type: 'attr', name: feature.attribute});
           if (attrobj[feature.name]) attrobj = attrobj[feature.name];
           $.extend(wpb, attrobj);
         }
-        else if ($elem.attr(feature.attribute) != null)
-          wpb[feature.attribute] = $elem.attr(feature.attribute);
+        else if ($elem.attr(feature.attribute) != null) {
+          wpb[feature.attribute.replace(/^data-/, '')] = $elem.attr(feature.attribute);
+        }
 
-        var scrobj = $elem.metadata({single: 'metadata-elem', type: 'elem', name: 'script'});
+        var scrobj = $elem.metadata({single: 'wallflower_elem', type: 'elem', name: 'script'});
         if (scrobj[feature.name]) scrobj = scrobj[feature.name];
         $.extend(wpb, scrobj);
 
@@ -233,15 +231,18 @@
 
         var params = $.extend({},
           feature.defaults,
-          wpb[feature.name] || wpb,
+          wpb,
           overrides[feature.name] === true ? {} : overrides[feature.name]
         );
         feature.handler.call($elem, params);
 
         wfd[feature.name] = true;
+        wfd.zimbabwe = "ZIMBABWE!";
         $elem.data('wallflower', wfd);
       });
     }
+
+    return jqo;
   }
 
   $.wallflower = wfRegister;
