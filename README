@@ -1,13 +1,20 @@
-Wallflower 0.1 README
+Wallflower 0.3 README
 
 There's not much to this at the moment; as it's
 just a jQuery plugin, there's no "installation"
 as such; just use it by gluing it into your
 own build or directly importing it into a page.
 
+0.3 Note: my "versioning" scheme is totally ad-hoc
+at the moment. There's not really any meaning to
+"0.3" but it's the version I've been maintaining
+lately. I should probably just get rid of the older
+versions.
+
+
 Files:
 
-* wallflower-0.1.js - the plugin
+* wallflower-0.3.js - the plugin
 
 Other files:
 
@@ -22,3 +29,7 @@ Other files:
 
 More info:
 
+There's a blog post at http://whatsthepointy.blogspot.com
+
+Sometime soon I'll be getting this up at the jQuery plugin
+site. That'll be the best place for documentation I think.
