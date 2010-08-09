@@ -1,0 +1,59 @@
+
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; }
+
+body {
+  font-family: Nobile, Arial, sans-serif;
+  font-size: 14px;
+  background-image: url("bg.png"); background-position: right top; background-repeat: repeat-none;
+  overflow: hidden;
+}
+
+#article-slot {
+  width: 66em; height: 100%;
+  overflow: auto;
+  margin: 0 auto;
+}
+
+article {
+  width: 60em;
+  background-color: rgba(250, 250, 255, 0.9);
+  display: block;
+  overflow: hidden;
+  padding: 0 2em 10em 2em;
+}
+
+section {
+  display: block;
+  overflow: hidden;
+}
+
+h1, h2, h3 {
+  font-family: "OFL Sorts Mill Goudy TT", "Arial Black", sans-serif;
+}
+
+h1 { font-size: 24px; }
+hgroup h1 { font-size: 40px; margin: 5px 0 10px 0; }
+h2 { font-size: 20px; }
+h3 { font-size: 18px; }
+
+ol { z-index: auto; }
+ul { z-index: auto; }
+li { z-index: auto; }
+dd {
+  margin: 0 0 10px 4em;
+}
+dt {
+  font-family: "OFL Sorts Mill Goudy TT", "Arial", sans-serif;
+  font-size: 16px; font-weight: bold;
+}
+dl {
+  margin-top: 10px;
+}
+a { z-index: auto; }
+
+code {
+  display: block;
+  white-space: pre;
+  margin: 5px 0 8px 0;
+  font-family: "Courier New", monospace;
+}

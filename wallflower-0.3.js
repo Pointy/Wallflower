@@ -234,6 +234,7 @@
           feature.defaults,
           wpb,
           $.isPlainObject(universal) ? universal : {},
+          $.isPlainObject(overrides[feature.group]) ? overrides[feature.group] : {},
           $.isPlainObject(overrides[feature.name]) ? overrides[feature.name] : {}
         );
         feature.handler.call($elem, params);

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="ISO-8859-1" >
+    <link rel='stylesheet' type='text/css' href='wallflower-doc.css'>
+    <link href='http://fonts.googleapis.com/css?family=OFL+Sorts+Mill+Goudy+TT' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Tangerine:regular,bold' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Nobile:regular,italic' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <div id='article-slot'>
+      <article>
+        <hgroup class='title'>
+          <h1>Wallflower</h1>
+          <h2>Reference &amp; Guide</h2>
+          <h3>9 Aug 2010</h3>
+        </hgroup>
+        <section id='introduction'>
+        Wallflower is a jQuery plugin designed to be a focal
+        point for the organization of page behavior (I like
+        the word "feature") initialization. As such, there
+        are two aspects to using wallflower:
+        <ol>
+          <li>Feature code must be introduced to the plugin
+          via a registration API. A feature is really just a
+          piece of code to be called and a minor amount of
+          additional information.
+          </li>
+          <li>Wallflower is invoked in order to apply registered
+          features to pages at page "ready" time, or to page
+          fragments fetched via a jQuery AJAX API, or even to page
+          fragments synthesized by some client-side templating
+          framework.
+          </li>
+        </ol>
+        </section>
+        <section id='registration'>
+          <h1>Registration</h1>
+          Feature registration is performed through a jQuery "global"
+          function.
+          The idea behind feature registration is to provide the
+          plugin with information about how to identify page
+          elements (that is, elements in the HTML of a page to
+          which some features are to be applied), how to extract
+          feature parameters from the elements, and then finally
+          what code to call when such elements are actually found
+          on a particular page.
+          <p>
+          The registration API can be invoked in different ways:
+          </p>
+          <code>
+            $.wallflower('feature-name');
+            $.wallflower('feature-name', function(params) { ... });
+            $.wallflower('feature-name', defaults, function(params) { ... });
+            $.wallflower(configuration);
+          </code>
+          <ol>
+            <li id='registration-option-1'>
+              The first and simplest invocation mode registers
+              a feature and assumes that the feature handler
+              is an established jQuery method of the same name.
+              For example,
+              <code>
+                $.wallflower('datepicker');
+              </code>
+              would register the jQuery UI "datepicker" widget.
+              Similarly, wallflower assumes that page elements
+              to be located and passed to the feature handler
+              can be identified by checking the "class" for
+              the presence of the feature name:
+              <code>
+                &lt;input type='text' class='datepicker'&gt;
+              </code>
+            </li>
+            <li id='registration-option-2'>
+              The second invocation method associates a feature name
+              with the given handler function. Again, wallflower 
+              assumes that page elements are to be found by class
+              name. The "params" passed to the handler will be those
+              found by wallflower's
+              <a href='#parameter-discovery'>standard means of discovery.</a>
+              (See also the discussion below of the <a href='#config-option-handler'>"handler"</a>
+              configuration option.)
+            </li>
+            <li id='registration-option-3'>
+              The third invocation method is similar to the
+              second, and also allows a block of registration
+              parameters to be passed. The second parameter
+              should be an object with any/all of the following
+              properties:
+              <dl>
+                <dt id='config-option-handler'>handler</dt>
+                <dd>
+                  The handler function for the feature.  Handler
+                  functions are passed parameters in the form of
+                  a single object. The object property names
+                  reflect names of parameters supplied to wallflower
+                  as defaults at registration time, or found
+                  <a href='#parameter-discovery'>embedded in HTML markup</a>
+                  on elements matching the
+                  <a href='#config-option-selector'>selector</a>
+                  for the feature, or passed as
+                  <a href='#feature-application'>application-time overrides</a>
+                  to wallflower.
+                  The handlers are invoked separately for each
+                  DOM element found, such that the "this" context
+                  reference will be a jQuery object containing one
+                  such DOM element per invocation.
+                  (In this way, handler functions can be simple
+                  references to members of the "jQuery.fn" object,
+                  because their invocation by wallflower mimics
+                  ordinary invocation via plain jQuery calls.)
+                </dd>
+                <dt id='config-option-defaults'>defaults</dt>
+                <dd>
+                  An object to be used as a source of default
+                  parameter values. These values may be overridden
+                  by parameters
+                  <a href='#parameter-discovery'>embedded in HTML markup</a>
+                  and by parameters supplied to wallflower at feature
+                  application time.
+                </dd>
+                <dt id='config-option-selector'>selector</dt>
+                <dd>
+                  A CSS/jQuery selector string to be used to locate
+                  page elements for the feature.
+                  The default value for "selector" is "." followed by
+                  the feature name, meaning that wallflower assumes
+                  that the feature name will appear in the class of
+                  elements to be affected.
+                </dd>
+                <dt id='config-option-attribute'>attribute</dt>
+                <dd>
+                  Names the DOM attribute to be checked by wallflower
+                  when
+                  <a href='#parameter-discovery'>checking matching elements for feature parameters</a>.
+                  By default,
+                  wallflower checks elements for a "data-wf" attribute.
+                  (It is not mandatory that elements have the attribute
+                  named here, nor the default "data-wf" attribute.)
+                </dd>
+                <dt id='config-option-evalAttr'>evalAttr</dt>
+                <dd>
+                  A boolean flag indicating whether the contents of 
+                  the "data-wf" attribute (or the attribute identified
+                  by the
+                  <a href='#config-option-attribute'>"attribute" configuration parameter</a>)
+                  should be interpreted
+                  as a JSON-notation object, or as a plain string.
+                  If true, the attribute value (if any) will be parsed
+                  as JSON, and the result used as an object full of
+                  parameters to pass to the feature. If false, the
+                  attribute value is used plain, with the attribute
+                  name used as the parameter name upon feature
+                  invocation. (If the attribute name starts with
+                  "data-", wallflower strips that for use as the
+                  application-time feature parameter.)
+                </dd>
+                <dt id='config-option-depends'>depends</dt>
+                <dd>
+                  A list (array) of one or more other wallflower feature
+                  names, indicating that the feature being registered
+                  should be applied to pages only <i>after</i> the named
+                  features are applied. Wallflower imposes an ordering
+                  on feature application based on these dependency
+                  declarations, but it does not treat missing dependencies
+                  as an error condition.
+                </dd>
+                <dt id='config-option-group'>group</dt>
+                <dd>
+                  Provides a group association for the feature.
+                  At
+                  <a href='#feature-application'>feature application time</a>,
+                  features can be selected by group name.
+                  No default group name is synthesized by wallflower.
+                </dd>
+              </dl>
+            </li>
+            <li id='registration-option-4'>
+              The fourth and last invocation scheme allows many features
+              to be registered one call.
+              The configuration object should be of the form:
+              <code>
+                {
+                  'feature-name': { <i>config params</i> },
+                  'feature-name': { <i>config params</i> },
+                  ...
+                }
+              </code>
+              Each block of "config params" should be as per the description
+              given with <a href='#registration-option-3'>registration method 3</a>
+              above.
+            </li>
+          </ol>
+          In all cases, calls to the registration function return a list of
+          zero or more "overridden" features. In other words, if you register
+          a feature called "myfeature" and then register another one with the
+          same name, the return value will be an object with the original
+          "myfeature" details.
+        </section>
+        <section id='feature-application'>
+          <h1>Feature Application</h1>
+          The registration of features with wallflower does not in itself
+          cause any actions to be taken outside of the plugin's internal
+          book-keeping mechanism.
+          In order to activate the registered features, wallflower should
+          be invoked as a jQuery method on some target set of DOM elements.
+          For example, to cause all registered wallflower features to be
+          applied to the entire page, the following jQuery construct could
+          be used:
+          <code>
+            $(function() {
+              $('body').wallflower();
+            });
+          </code>
+          The features need not be applied to the entire page, of course;
+          wallflower operates on whatever DOM elements are presented to it.
+          <p>
+          What wallflower does, for each target element, is to find elements
+          matching the <a href='#config-option-selector'>configured selectors</a>
+          of each registered feature. (Features are processed in an order that
+          satisfies the <a href='#config-option-depends'>dependencies</a> declared
+          at configuration time, if any.) Those elements are looked for only 
+          beneath the target elements in the jQuery object from which the plugin
+          is invoked. In other words, in the following:
+          </p>
+          <code>
+            $('#help-form fieldset.question').wallflower();
+          </code>
+          <p>
+          the plugin would look for elements only in <em>fieldset</em> elements
+          located inside an element with id "help-form".
+          </p><p>
+          As elements are located for each feature being processed, wallflower
+          <a href='#parameter-discovery'>discovers embedded parameters</a>
+          in the DOM and extracts them.
+          Those parameters are used to extend a copy of the default parameters
+          supplied at <a href='#registration'>registration time.</a>
+          </p><p>
+          The wallflower plugin also accepts a parameter object when it is
+          invoked for feature application.
+          The form of this parameter object is, generally:
+          <code>
+            {
+              'feature-A': {
+                'parameter-name': 'value', ...
+              },
+              
+              'feature-B': false,  // or true
+
+              '.group-A': {
+                'parameter-name': 'value', ...
+              },
+
+              '.group-B': false,  // or true
+
+              '*': {
+                'parameter-name': 'value', ...
+              },
+
+              '*': false  // or true
+            }
+          </code>
+          <dl>
+            <dt>Feature name, with parameters</dt>
+            <dd>
+              The given set of parameters are used as overrides for
+              parameters discovered in the DOM and parameters from
+              registration-time defaults.
+              In addition, the presence of a parameter object ensures
+              that a feature will be processed during an invocation 
+              of wallflower even if it would otherwise be disabled by
+              a group or universal disable flag.
+            </dd>
+            <dt>Feature name and boolean</dt>
+            <dd>
+              If the boolean is <em>false</em>, then wallflower will
+              skip the named feature for this invocation. If the
+              boolean is <em>true</em>, then the feature will be processed
+              even if it would otherwise be disabled at the group-level
+              or universally.
+            </dd>
+            <dt>Group name, with parameters</dt>
+            <dd>
+              The given set of parameters are used as overrides for
+              all features
+              <a href='#config-option-group'>configued as members of the group</a>.
+              Note that the group name must be preceded by a period (like "class"
+              references in jQuery selectors).
+              The presence of group parameters overrides the universal
+              disable flag as well.
+            </dd>
+            <dt>Group name and boolean</dt>
+            <dd>
+              If the boolean is <em>false</em>, then all features configued
+              in the given group are skipped for this invocation of the plugin.
+              If the boolean is <em>true</em>, then the features are not
+              skipped even with the universal disable flag.
+            </dd>
+            <dt>Asterisk, with parameters</dt>
+            <dd>
+              The given set of parameters is used as overrides for all
+              processed features.
+            </dd>
+            <dt>Asterisk and boolean</dt>
+            <dd>
+              All features are disabled except those explicitly enabled.
+            </dd>
+          </dl>
+          Wallflower composes the final set of parameters supplied to a
+          feature's handler function from the following sources, in this
+          order:
+          <ol>
+            <li><a href='#config-option-defaults'>configuration defaults</a></li>
+            <li><a href='#parameter-discovery'>discovered parameters</a></li>
+            <li>parameters supplied at wallflower invocation time under the "*" property</li>
+            <li>parameters supplied at wallflower invocation time under the group name</li>
+            <li>parameters supplied at wallflower invocation time under the feature name</li>
+          </ol>
+        </section>
+        <section id='parameter-discovery'>
+          <h1>Parameter Discovery</h1>
+          When, by using the <a href='#config-option-selector'>selector string</a> configured
+          for a registered feature, wallflower locates an element in the DOM that should be
+          processed by the feature's <a href='#config-option-handler'>handler</a>,
+          the plugin first examines the element for the presence of embedded
+          parameters.
+          Wallflower uses the
+          <a href='http://plugins.jquery.com/project/metadata' target='_blank'>Metadata</a>
+          plugin to handle parameter values in most cases.
+          (The plugin is embedded in the wallflower source, so you don't have to worry about
+          it. On the other hand, if you're already using the Metadata plugin, you can 
+          source wallflower after Metadata and it'll notice that Metadata is already installed.)
+          <p>
+          Parameters can be incorporated into HTML markup in three ways:
+          <ol>
+            <li>In the "class" attribute</li>
+            <li>In an element attribute other than "class"</li>
+            <li>In a child <em>script</em> element</li>
+          </ol>
+          Wallflower always checks all sources of parameters, but there's no particular
+          requirement that an affected element involve any embedded parameters at all.
+          <dl>
+            <dt>The "class" attribute</dt>
+            <dd>
+              In order to incorporate parameters in the "class" attribute value,
+              the names and values should be written in JSON notation, surrounded
+              by curly braces:
+              <code>
+                &lt;input type='text' class='datepicker { minDate: 0, maxDate: 90 }'&gt;
+              </code>
+              Any numbers of parameters may be included between the curly braces.
+              <p>
+              If two or more features may collide over a given element, then
+              the parameters can be qualified by feature name:
+              </p>
+              <code>
+                &lt;input
+                  type='text'
+                  class='datepicker { datepicker: { minDate: 0, maxDate: 90 } }'
+                &gt;
+              </code>
+            </dd>
+            <dt>Alternate attributes</dt>
+            <dd>
+              Wallflower checks the <a href='#config-option-attribute'>configured attribute</a>
+              of affected elements, or the "data-wf" attribute if no attribute is explicitly
+              named in the feature configuration.
+              If a value is found, it is treated as a JSON-formatted value like
+              parameters embedded in the "class" attribute, though outer curly
+              braces are optional.
+              However, if the <a href='#config-option-evalAttr'>"evalAttr" configuration property</a>
+              is <em>false</em>, then the attribute value as a whole is taken to be
+              the parameter value, with the name being derived from the attribute name.
+              For attribute names beginning with the prefix "data-", wallflower strips
+              that prefix to form the parameter name.
+              <p>
+              Again, as with parameter values embedded in the "class", feature names
+              can be used to group parameters when clarification is necessary.
+            </dd>
+            <dt>Script elements</dt>
+            <dd>
+              The last source of parameters that wallflower can use is a <em>script</em>
+              element contained by the affected element.
+              The markup looks like this:
+              <code>
+                &lt;div class='affected-by-wallflower'&gt;
+                  &lt;script type='text/plain'&gt;
+                    parameter_1: 100,
+                    parameter_2: "something",
+                    parameter_3: "something else"
+                  &lt;/script&gt;
+              </code>
+              By marking the script element with a type of "text/plain", the browser is
+              informed that no attempt should be made to execute the script as code.
+            </dd>
+          </dl>
+        </section>
+      <article>
+    </div>
+    <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
+    <script src='../wallflower-0.3.js'></script>
+    <script src='wallflower-doc.js'></script>
+  </body>
+</html>
