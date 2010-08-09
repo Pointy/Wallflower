@@ -109,7 +109,7 @@
       feature.selector = feature.selector || ('.' + feature.name);
       feature.group = feature.group && (feature.group.charAt(0) === '.' ? feature.group : ('.' + feature.group));
 
-      if (registry.byName[feature.name]) overridden.push(feature);
+      if (registry.byName[feature.name]) overridden.push(registry.byName[feature.name]);
       registry.byName[feature.name] = feature;
     }
     registry.ordered = false;
