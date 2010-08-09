@@ -176,7 +176,8 @@
       "featureToDisable": false,
       "featureToEnable": true, // or a parameter object
       ".groupToDisable": false,
-      ".groupToEnable": true
+      ".groupToEnable": true,
+      "*": false // or parameter object
     }
 
   If a feature name of "*" is included, the supplied parameter
@@ -187,7 +188,7 @@
   *********************************************************/
   function wallflower(overrides) {
     overrides = overrides || {};
-    var 
+    var
       universal = overrides['*'],
       allDisabled = universal === false,
       registry = getRegistry(),
@@ -232,7 +233,8 @@
         var params = $.extend({},
           feature.defaults,
           wpb,
-          overrides[feature.name] === true ? {} : overrides[feature.name]
+          $.isPlainObject(universal) ? universal : {},
+          $.isPlainObject(overrides[feature.name]) ? overrides[feature.name] : {}
         );
         feature.handler.call($elem, params);
 
