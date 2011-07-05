@@ -18,6 +18,27 @@
 
   /*******************************************************
 
+  Global operational options
+
+  runOnReady: if true, then wallflower will apply all
+    registered features in its "ready" handler. Default
+    is true.
+
+  readyParams: parameters to be used in the "ready"
+    handler invocation (if "runOnReady" option is true)
+
+  ********************************************************/
+  var options = {
+    runOnReady: true,
+    readyParams: {}
+  };
+
+  function setOptions(newOptions) {
+    $.extend(options, newOptions);
+  }
+
+  /*******************************************************
+
   Register a wallflower feature handler. Can be invoked
   variously:
 
@@ -107,7 +128,7 @@
       }, configObject[featureName]);
 
       feature.selector = feature.selector || ('.' + feature.name);
-      feature.group = feature.group && (feature.group.charAt(0) === '.' ? feature.group : ('.' + feature.group));
+      feature.group = $.isArray(feature.group) ? feature.group : (featureGroup && feature.group.split(' '));
 
       if (registry.byName[feature.name]) overridden.push(registry.byName[feature.name]);
       registry.byName[feature.name] = feature;
@@ -194,12 +215,28 @@
       registry = getRegistry(),
       jqo = this;
 
+    /* true if any group is present and truthy */
+    function isGroupIncluded(feature) {
+      for (var i = feature.group.length; --i >= 0; )
+        if (overrides[feature.group[i]]) return true;
+    }
+
+    /* true if all groups are falsy and at least one is explicitly false */
+    function isGroupExcluded(feature) {
+      var ex = false;
+      for (var i = feature.group.length; --i >= 0; ) {
+        if (overrides[feature.group[i]]) return false;
+        if (overrides[feature.group[i]] === false) ex = true;
+      }
+      return ex;
+    }
+
     for (var ri = 0, rlen = registry.length; ri < rlen; ++ri) {
       var feature = registry[ri];
       if (
-        allDisabled && !overrides[feature.name] && !overrides[feature.group] ||
+        allDisabled && !overrides[feature.name] && !isGroupIncluded(feature) ||
         overrides[feature.name] === false || 
-        overrides[feature.group] === false
+        isGroupExcluded(feature)
       ) continue;
 
       jqo.find(feature.selector).each(function() {
@@ -249,7 +286,14 @@
   }
 
   $.wallflower = wfRegister;
+  $.wallflower.options = setOptions;
   $.fn.wallflower = wallflower;
+
+  $(function() {
+    if (options.runOnReady) {
+      $('body').wallflower(options.readyParams);
+    }
+  });
 
   //////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////
